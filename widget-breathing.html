@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Breathing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: transparent;
+      height: 100%;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #2a2a2a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .header {
+      text-align: center;
+    }
+
+    .title {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-size: 22px;
+      color: #2a2a2a;
+      letter-spacing: -0.4px;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: #888;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 400;
+    }
+
+    .breath-area {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .breath-circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(120, 180, 220, 0.4), rgba(80, 140, 200, 0.15));
+      border: 1px solid rgba(80, 140, 200, 0.25);
+      transition: transform 5s cubic-bezier(0.4, 0, 0.6, 1), background 1s ease;
+      position: absolute;
+      transform: scale(1);
+    }
+
+    .breath-circle.inhale  { transform: scale(2.0); transition-duration: 5s; }
+    .breath-circle.hold    { transform: scale(2.0); transition-duration: 2s; }
+    .breath-circle.exhale  { transform: scale(1.0); transition-duration: 5s; }
+
+    .breath-text {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .phase {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-size: 28px;
+      color: #1a1a1a;
+      letter-spacing: -0.4px;
+      transition: opacity 0.4s ease;
+    }
+
+    .counter {
+      font-size: 13px;
+      color: #888;
+      margin-top: 6px;
+      letter-spacing: 0.05em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    button {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 500;
+      padding: 10px 22px;
+      border-radius: 100px;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      background: rgba(255, 255, 255, 0.5);
+      color: #2a2a2a;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    button:hover {
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.25);
+    }
+
+    button.primary {
+      background: #1a1a1a;
+      color: #fff;
+      border-color: #1a1a1a;
+    }
+
+    button.primary:hover {
+      background: #000;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .footer {
+      font-size: 10px;
+      color: #aaa;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { color: #e0e0e0; }
+      .title { color: #f0f0f0; }
+      .subtitle { color: #888; }
+      .phase { color: #f0f0f0; }
+      .counter { color: #888; }
+      button {
+        background: rgba(255, 255, 255, 0.04);
+        color: #e0e0e0;
+        border-color: rgba(255, 255, 255, 0.15);
+      }
+      button:hover { background: rgba(255, 255, 255, 0.08); }
+      button.primary {
+        background: #f0f0f0;
+        color: #1a1a1a;
+        border-color: #f0f0f0;
+      }
+      button.primary:hover { background: #fff; }
+      .breath-circle {
+        background: radial-gradient(circle at 30% 30%, rgba(140, 200, 240, 0.3), rgba(80, 140, 200, 0.1));
+        border-color: rgba(140, 200, 240, 0.2);
+      }
+      .footer { color: #666; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <div class="header">
+      <div class="title">Coherent Breathing</div>
+      <div class="subtitle">A52 · 5-5-2 · 6 breaths per minute</div>
+    </div>
+
+    <div class="breath-area">
+      <div class="breath-circle" id="circle"></div>
+      <div class="breath-text">
+        <div class="phase" id="phase">Ready</div>
+        <div class="counter" id="counter">Press start</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="primary" id="startBtn">Start</button>
+      <button class="icon-btn" id="muteBtn" title="Toggle sound">🔊</button>
+      <button class="icon-btn" id="voiceBtn" title="Toggle voice">💬</button>
+    </div>
+
+    <div class="footer">5s inhale · 2s hold · 5s exhale</div>
+
+  </div>
+
+  <script>
+    // ─── A52 Breathing Pattern (evidence-based, 5-5-2) ────────────────────
+    const PHASES = [
+      { name: 'Inhale', duration: 5, scale: 'inhale', tone: 'up' },
+      { name: 'Hold',   duration: 2, scale: 'hold',   tone: 'hold' },
+      { name: 'Exhale', duration: 5, scale: 'exhale', tone: 'down' },
+    ];
+
+    const circle    = document.getElementById('circle');
+    const phaseEl   = document.getElementById('phase');
+    const counterEl = document.getElementById('counter');
+    const startBtn  = document.getElementById('startBtn');
+    const muteBtn   = document.getElementById('muteBtn');
+    const voiceBtn  = document.getElementById('voiceBtn');
+
+    let running = false;
+    let soundOn = true;
+    let voiceOn = false;
+    let timer   = null;
+    let countdownTimer = null;
+    let audioCtx = null;
+    let phaseIdx = 0;
+
+    function getAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+
+    function playTone(type) {
+      if (!soundOn) return;
+      const ctx = getAudio();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+
+      const now = ctx.currentTime;
+      if (type === 'up') {
+        osc.frequency.setValueAtTime(330, now);
+        osc.frequency.exponentialRampToValueAtTime(523, now + 0.6);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.08, now + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+      } else if (type === 'down') {
+        osc.frequency.setValueAtTime(523, now);
+        osc.frequency.exponentialRampToValueAtTime(330, now + 0.6);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.08, now + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+      } else {
+        // Hold — soft single tone
+        osc.frequency.setValueAtTime(440, now);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.04, now + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      }
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.8);
+    }
+
+    function speakPhase(name) {
+      if (!voiceOn || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(name);
+      u.rate   = 0.85;
+      u.pitch  = 0.9;
+      u.volume = 0.5;
+      window.speechSynthesis.speak(u);
+    }
+
+    function runPhase() {
+      if (!running) return;
+      const p = PHASES[phaseIdx];
+
+      circle.className = 'breath-circle ' + p.scale;
+      phaseEl.textContent = p.name;
+      playTone(p.tone);
+      speakPhase(p.name);
+
+      // Countdown
+      let remaining = p.duration;
+      counterEl.textContent = remaining + 's';
+      clearInterval(countdownTimer);
+      countdownTimer = setInterval(() => {
+        remaining -= 1;
+        if (remaining > 0) counterEl.textContent = remaining + 's';
+        else clearInterval(countdownTimer);
+      }, 1000);
+
+      timer = setTimeout(() => {
+        phaseIdx = (phaseIdx + 1) % PHASES.length;
+        runPhase();
+      }, p.duration * 1000);
+    }
+
+    function start() {
+      running = true;
+      phaseIdx = 0;
+      startBtn.textContent = 'Stop';
+      startBtn.classList.remove('primary');
+      // Resume audio context if suspended (mobile autoplay)
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      else getAudio();
+      runPhase();
+    }
+
+    function stop() {
+      running = false;
+      clearTimeout(timer);
+      clearInterval(countdownTimer);
+      circle.className = 'breath-circle';
+      phaseEl.textContent = 'Ready';
+      counterEl.textContent = 'Press start';
+      startBtn.textContent = 'Start';
+      startBtn.classList.add('primary');
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    startBtn.addEventListener('click', () => running ? stop() : start());
+
+    muteBtn.addEventListener('click', () => {
+      soundOn = !soundOn;
+      muteBtn.textContent = soundOn ? '🔊' : '🔇';
+      muteBtn.style.opacity = soundOn ? '1' : '0.5';
+    });
+
+    voiceBtn.addEventListener('click', () => {
+      voiceOn = !voiceOn;
+      voiceBtn.style.opacity = voiceOn ? '1' : '0.5';
+      voiceBtn.style.background = voiceOn ? 'rgba(0,0,0,0.08)' : '';
+    });
+
+    // Set initial state
+    voiceBtn.style.opacity = '0.5';
+  </script>
+
+</body>
+</html>

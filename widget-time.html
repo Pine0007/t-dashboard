@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Time</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: transparent;
+      height: 100%;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #2a2a2a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .label {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-size: 17px;
+      color: #5a5a5a;
+      letter-spacing: -0.2px;
+    }
+
+    .value {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: #888;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .value strong {
+      color: #1a1a1a;
+      font-weight: 600;
+    }
+
+    .bar {
+      height: 2px;
+      background: rgba(0, 0, 0, 0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: #1a1a1a;
+      border-radius: 2px;
+      transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 4px;
+      font-size: 11px;
+      color: #aaa;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 400;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { color: #e0e0e0; }
+      .label { color: #a0a0a0; }
+      .value { color: #888; }
+      .value strong { color: #f0f0f0; }
+      .bar { background: rgba(255, 255, 255, 0.1); }
+      .bar-fill { background: #f0f0f0; }
+      .footer { color: #666; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <div class="row">
+      <div class="row-top">
+        <span class="label">Week of the year</span>
+        <span class="value"><strong id="weekNum">--</strong> / <span id="weekTotal">52</span></span>
+      </div>
+      <div class="bar"><div class="bar-fill" id="weekBar" style="width:0%"></div></div>
+    </div>
+
+    <div class="row">
+      <div class="row-top">
+        <span class="label">Day of the year</span>
+        <span class="value"><strong id="dayNum">--</strong> / <span id="dayTotal">365</span></span>
+      </div>
+      <div class="bar"><div class="bar-fill" id="dayBar" style="width:0%"></div></div>
+    </div>
+
+    <div class="footer">
+      <span id="dateLabel">—</span>
+      <span id="pctLabel">—</span>
+    </div>
+
+  </div>
+
+  <script>
+    function getISOWeek(d) {
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const day = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() + 4 - day);
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+    }
+
+    function getWeeksInYear(year) {
+      return getISOWeek(new Date(year, 11, 28));
+    }
+
+    function isLeapYear(y) {
+      return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+    }
+
+    function update() {
+      const now = new Date();
+      const year = now.getFullYear();
+
+      // Week
+      const week = getISOWeek(now);
+      const totalWeeks = getWeeksInYear(year);
+      document.getElementById('weekNum').textContent = week;
+      document.getElementById('weekTotal').textContent = totalWeeks;
+
+      // Day of year
+      const start = new Date(year, 0, 0);
+      const dayOfYear = Math.floor((now - start) / 86400000);
+      const totalDays = isLeapYear(year) ? 366 : 365;
+      document.getElementById('dayNum').textContent = dayOfYear;
+      document.getElementById('dayTotal').textContent = totalDays;
+
+      // Bars
+      const weekPct = (week / totalWeeks) * 100;
+      const dayPct  = (dayOfYear / totalDays) * 100;
+      setTimeout(() => {
+        document.getElementById('weekBar').style.width = weekPct + '%';
+        document.getElementById('dayBar').style.width = dayPct + '%';
+      }, 80);
+
+      // Footer
+      const opts = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+      document.getElementById('dateLabel').textContent = now.toLocaleDateString('en-US', opts);
+      document.getElementById('pctLabel').textContent = dayPct.toFixed(1) + '% of ' + year;
+    }
+
+    update();
+    setInterval(update, 60000);
+  </script>
+
+</body>
+</html>
